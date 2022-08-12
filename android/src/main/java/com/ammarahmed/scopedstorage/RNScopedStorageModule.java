@@ -814,64 +814,64 @@ public class RNScopedStorageModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void copyFile(String path, String dest, Callback callback) {
 
-        AsyncTask.execute(() -> {
-                
-            InputStream in = null;
-            OutputStream out = null;
-            String message = "";
+        AsyncTask.execute(new Runnable() {
 
-            try {
-                if (!exists(path)) {
-                    message = "Source file does not exist";
-                    callback.invoke((message));
-                    return;
-                }
-                ParcelFileDescriptor inputDescriptor = reactContext.getContentResolver().openFileDescriptor(Uri.parse(path), "rw");
-                in = new FileInputStream(inputDescriptor.getFileDescriptor());
+            @Override
+            public void run() {
+                InputStream in = null;
+                OutputStream out = null;
+                String message = "";
 
-                if (!exists(dest)) {
-                    message = "Destination file does not exist. Please create destination file with createFile.";
-                    callback.invoke((message));
-                    return;
-                }
-
-                ParcelFileDescriptor outputDescriptor = reactContext.getContentResolver().openFileDescriptor(Uri.parse(dest), "rw");
-                out = new FileOutputStream(outputDescriptor.getFileDescriptor());
-
-                byte[] buf = new byte[10240];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-            } catch (Exception err) {
-                message += err.getLocalizedMessage();
-            } finally {
                 try {
-                    if (in != null) {
-                        in.close();
+                    if (!exists(path)) {
+                        message = "Source file does not exist";
+                        callback.invoke((message));
+                        return;
                     }
-                    if (out != null) {
-                        out.close();
+                    ParcelFileDescriptor inputDescriptor = reactContext.getContentResolver().openFileDescriptor(Uri.parse(path), "rw");
+                    in = new FileInputStream(inputDescriptor.getFileDescriptor());
+
+                    if (!exists(dest)) {
+                        message = "Destination file does not exist. Please create destination file with createFile.";
+                        callback.invoke((message));
+                        return;
                     }
-                } catch (Exception e) {
-                    message += e.getLocalizedMessage();
+
+                    ParcelFileDescriptor outputDescriptor = reactContext.getContentResolver().openFileDescriptor(Uri.parse(dest), "rw");
+                    out = new FileOutputStream(outputDescriptor.getFileDescriptor());
+
+                    byte[] buf = new byte[10240];
+                    int len;
+                    while ((len = in.read(buf)) > 0) {
+                        out.write(buf, 0, len);
+                    }
+                } catch (Exception err) {
+                    message += err.getLocalizedMessage();
+                } finally {
+                    try {
+                        if (in != null) {
+                            in.close();
+                        }
+                        if (out != null) {
+                            out.close();
+                        }
+                    } catch (Exception e) {
+                        message += e.getLocalizedMessage();
+                    }
+                }
+
+                if (message != "") {
+                    callback.invoke(message);
+                } else {
+                    callback.invoke();
                 }
             }
-
-            if (message != "") {
-                callback.invoke(message);
-            } else {
-                callback.invoke();
-            }
-       
-       
        });
 
         
 
         
     }
-
 
     public String normalizePath(String path) {
         if (path == null)
