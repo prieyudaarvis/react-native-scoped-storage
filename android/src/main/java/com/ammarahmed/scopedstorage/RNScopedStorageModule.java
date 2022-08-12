@@ -812,7 +812,7 @@ public class RNScopedStorageModule extends ReactContextBaseJavaModule {
      * @param callback JS context callback
      */
     @ReactMethod
-    public void copyFile(String path, String dest, Callback callback) {
+    public void copyFile(final String path, final String dest, final Callback callback) {
 
         AsyncTask.execute(new Runnable() {
 
